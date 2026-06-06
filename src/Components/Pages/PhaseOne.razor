@@ -1,0 +1,64 @@
+﻿@page "/phase-one"
+@using Microsoft.AspNetCore.Http.HttpResults
+@using PokemonApp.Services
+@rendermode InteractiveServer
+@inject IPokemonService PokemonService;
+
+<PageTitle>Pokedex - Phase 1</PageTitle>
+
+<div class="mb-5 info-card">
+	<h3><b>Phase One - Basic Display</b></h3>
+
+	<ol>
+		<li>Connect to <a href="https://pokeapi.co/">PokeAPI</a> from the backend.</li>
+		<li>Display the searched Pokemon on the frontend.</li>
+	</ol>
+</div>
+
+<InputNumber @bind-Value="_pokemonId" @onfocusout="ClampAndUpdatePokemon" @onkeyup="ClampAndUpdatePokemon" @onclick="ClampAndUpdatePokemon" class="form-control mb-3 input" placeholder="Enter Pokemon ID" />
+
+@if (_pokemon is null)
+{
+	<p class="text-center"><em>Loading pokemon...</em></p>
+}
+else
+{
+	<PokemonDisplay Pokemon="@_pokemon" />
+}
+
+@code {
+	private Pokemon? _pokemon;
+	private int _pokemonId = 1;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await UpdatePokemon();
+	}
+
+	private async Task ClampAndUpdatePokemon()
+	{
+		_pokemonId = Math.Clamp(_pokemonId, 1, 151); // clamping the value between 1 and 151 for the first generation of Pokemon
+		await UpdatePokemon();
+	}
+
+	private async Task UpdatePokemon()
+	{
+		var result = await PokemonService.GetPokemonAsync(_pokemonId);
+		if (result is not null && result.Result is Ok<Pokemon> okResult)
+		{
+			if (okResult.Value is not null)
+			{
+				_pokemon = okResult.Value;
+			}
+			else
+			{
+				// Handle the case where the API call returns an empty list
+				_pokemon = new Pokemon();
+			}
+		}
+		else
+		{
+			// Handle the case where the API call fails or returns null
+		}
+	}
+}

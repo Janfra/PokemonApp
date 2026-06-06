@@ -1,0 +1,27 @@
+﻿.pokemon-display-container {
+    margin: 0px auto;
+    background: linear-gradient(135deg, var(--muted) 0%, var(--card) 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 300px;
+    max-width: 50%;
+}
+
+.sprite-display {
+    display: block;
+    border: 2px solid;
+    border-radius: 5px;
+    border-color: var(--border);
+    background-color: var(--card);
+    margin: 10px auto;
+}
+
+.pokemon-name {
+    margin-top: 10px;
+    font-weight: bolder;
+    font-size: 30px;
+    text-shadow: 1px 1px 2px var(--popover);
+    text-align: center;
+    color: var(--popover-foreground);
+}

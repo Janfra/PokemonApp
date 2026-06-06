@@ -1,0 +1,46 @@
+﻿@page "/phase-two"
+@using Microsoft.AspNetCore.Http.HttpResults
+@using PokemonApp.Services
+@rendermode InteractiveServer
+@inject IPokemonService PokemonService;
+
+<div class="mb-5 info-card">
+	<h3><b>Phase Two - Pagination Display</b></h3>
+
+	<ol>
+		<li>Retrieve a list of pokemons from the API.</li>
+		<li>Display the resulting Pokemons on the frontend in a pagination.</li>
+	</ol>
+</div>
+
+@if (_pokemonList is null)
+{
+	<p class="text-center"><em>Loading list...</em></p>
+}
+else
+{
+<div class="flex-wrap">
+	@foreach (var pokemon in _pokemonList)
+	{
+		<PokemonDisplay Pokemon="@pokemon"/>
+	}
+</div>
+}
+
+@code {
+	private List<Pokemon>? _pokemonList;
+
+	protected override async Task OnInitializedAsync()
+	{
+		var results = await PokemonService.GetPokemonsAsync(20);
+		if (results.Result is NotFound)
+		{
+			// Handle not found
+			_pokemonList = new();
+		}
+		else if (results.Result is Ok<List<Pokemon>> okResult)
+		{
+			_pokemonList = okResult.Value;
+		}
+	}
+}

@@ -1,0 +1,13 @@
+﻿@using PokemonApp.Models
+
+<div class="pokemon-display-container">
+	<p class="pokemon-name">@Pokemon.Name</p>
+	<img src="@Pokemon.Sprites.FrontDefault" alt="@Pokemon.Name" class="sprite-display" />
+	<p class="muted-text text-center text-small">#@Pokemon.Id</p>
+</div>
+
+@code {
+	[EditorRequired]
+	[Parameter]
+	public Pokemon Pokemon { get; set; }
+}
