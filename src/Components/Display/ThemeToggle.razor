@@ -1,0 +1,56 @@
+﻿@using PokemonApp.Interop
+@rendermode InteractiveServer
+
+<Toggle @bind-value=_isDarkMode KnobContent="🌙" ToggleChanged="ToggleDarkmode"></Toggle>
+
+@code {
+	private const string DarkModeStorageKey = "IsDarkMode";
+	private bool _isDarkMode { get; set; } = false;
+
+	[Inject] private ILocalStorageInterop _localStorage { get; set; } = null!;
+	[Inject] private ILocalThemeInterop _localTheme { get; set; } = null!;
+
+	private string _darkModeClass
+	{
+		get
+		{
+			return _isDarkMode ? "dark" : "";
+		}
+	}
+
+	protected async override Task OnAfterRenderAsync(bool firstRender)
+	{
+		if (firstRender)
+		{
+			var result = await _localStorage.GetItem(DarkModeStorageKey);
+			if (bool.TryParse(result, out bool savedMode))
+			{
+				await SetDarkMode(savedMode);
+			}
+			else
+			{
+				var isBrowserDarkMode = await _localTheme.IsBrowserDarkMode();
+				var setMode = SetDarkMode(isBrowserDarkMode);
+				var updateStorage = _localStorage.SetItem(DarkModeStorageKey, isBrowserDarkMode.ToString());
+				await Task.WhenAll(setMode, updateStorage);
+			}
+		}
+	}
+
+	private async Task ToggleDarkmode(bool args)
+	{
+		var themeChange = _localTheme.SetIsDarkMode(_isDarkMode);
+		var storageChange = _localStorage.SetItem(DarkModeStorageKey, _isDarkMode.ToString());
+		await Task.WhenAll(themeChange, storageChange);
+	}
+
+	private async Task SetDarkMode(bool isDarkMode)
+	{
+		if (isDarkMode != _isDarkMode)
+		{
+			_isDarkMode = isDarkMode;
+			StateHasChanged();
+			await _localTheme.SetIsDarkMode(_isDarkMode);
+		}
+	}
+}
