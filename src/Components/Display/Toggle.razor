@@ -1,0 +1,34 @@
+﻿<label class="switch">
+	<input type="checkbox"
+		checked ="@Value"
+		@onchange="HandleChange"/>
+	<span class="slider @_inputDynamicClass" data-before-content="@KnobContent"></span>
+</label>
+
+@code {
+	[Parameter] 
+	public bool Value { get; set; }
+
+	[Parameter]
+	public EventCallback<bool> ValueChanged { get; set; }
+
+	[Parameter]
+	public string KnobContent { get; set; } = string.Empty;
+
+	[Parameter]
+	public bool IsLowOpacity { get; set; }
+
+	private string _inputDynamicClass
+	{
+		get
+		{
+			return IsLowOpacity ? "low-opacity" : "";
+		}
+	}
+
+	private async Task HandleChange(ChangeEventArgs args)
+	{
+		Value = (bool)(args.Value ?? false);
+		await ValueChanged.InvokeAsync(Value);
+	}
+}
