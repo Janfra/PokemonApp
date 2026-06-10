@@ -2,7 +2,10 @@
 
 <div class="pokemon-display-container">
 	<p class="pokemon-id muted-text text-small">#@Pokemon.Id.ToString("D3")</p>
-	<img src="@Pokemon.Sprites.FrontDefault" alt="@Pokemon.Name" class="sprite-display" />
+	<div class="pokemon-shiny-toggle-wrapper">
+		<Toggle @bind-value=_isShiny KnobContent="✨" IsLowOpacity=true />
+	</div>
+	<img src="@Sprite" alt="@Pokemon.Name" class="sprite-display" />
 	<p class="pokemon-name">@Pokemon.Name</p>
 </div>
 
@@ -10,4 +13,14 @@
 	[EditorRequired]
 	[Parameter]
 	public Pokemon Pokemon { get; set; }
+
+	private bool _isShiny;
+
+	public string Sprite
+	{
+		get
+		{
+			return _isShiny ? Pokemon.Sprites.FrontShiny : Pokemon.Sprites.FrontDefault;
+		}
+	}
 }

@@ -42,3 +42,9 @@
     letter-spacing: -1px;
     cursor: default;
 }
+
+.pokemon-shiny-toggle-wrapper {
+    position: absolute;
+    top: 5%;
+    right: 5%;
+}
