@@ -1,5 +1,6 @@
 using PokemonApp.Components;
 using PokemonApp.Configuration;
+using PokemonApp.Interop;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddScoped<ILocalStorageInterop, LocalStorageInterop>();
+builder.Services.AddScoped<ILocalThemeInterop, LocalThemeInterop>();
 builder.Services.AddPokemonConfiguration(builder.Configuration);
 
 var app = builder.Build();
