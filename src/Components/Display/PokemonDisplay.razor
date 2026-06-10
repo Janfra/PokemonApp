@@ -1,9 +1,9 @@
 ﻿@using PokemonApp.Models
 
 <div class="pokemon-display-container">
-	<p class="pokemon-name">@Pokemon.Name</p>
+	<p class="pokemon-id muted-text text-small">#@Pokemon.Id.ToString("D3")</p>
 	<img src="@Pokemon.Sprites.FrontDefault" alt="@Pokemon.Name" class="sprite-display" />
-	<p class="muted-text text-center text-small">#@Pokemon.Id</p>
+	<p class="pokemon-name">@Pokemon.Name</p>
 </div>
 
 @code {
