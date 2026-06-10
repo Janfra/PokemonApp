@@ -1,4 +1,6 @@
-﻿<label class="switch">
+﻿@rendermode InteractiveServer
+
+<label class="switch">
 	<input type="checkbox"
 		checked ="@Value"
 		@onchange="HandleChange"/>
@@ -11,6 +13,9 @@
 
 	[Parameter]
 	public EventCallback<bool> ValueChanged { get; set; }
+
+	[Parameter]
+	public EventCallback<bool> ToggleChanged { get; set; }
 
 	[Parameter]
 	public string KnobContent { get; set; } = string.Empty;
@@ -29,6 +34,8 @@
 	private async Task HandleChange(ChangeEventArgs args)
 	{
 		Value = (bool)(args.Value ?? false);
-		await ValueChanged.InvokeAsync(Value);
+		var valueChange = ValueChanged.InvokeAsync(Value);
+		var toggleChange = ToggleChanged.InvokeAsync(Value);
+		await Task.WhenAll(valueChange, toggleChange);
 	}
 }
