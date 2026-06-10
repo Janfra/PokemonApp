@@ -19,10 +19,12 @@
 }
 else
 {
-<div class="flex-wrap">
+<div class="flex-wrap d-inline-flex">
 	@foreach (var pokemon in _pokemonList)
 	{
-		<PokemonDisplay Pokemon="@pokemon"/>
+		<div class="m-1">
+			<PokemonDisplay Pokemon="@pokemon"/>
+		</div>
 	}
 </div>
 }
