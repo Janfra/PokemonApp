@@ -1,56 +1,39 @@
-﻿@using PokemonApp.Interop
-@rendermode InteractiveServer
+﻿@rendermode InteractiveServer
 
-<Toggle @bind-value=_isDarkMode KnobContent="🌙" ToggleChanged="ToggleDarkmode"></Toggle>
+<Toggle @bind-value=IsDarkMode KnobContent="🌙"></Toggle>
 
 @code {
-	private const string DarkModeStorageKey = "IsDarkMode";
-	private bool _isDarkMode { get; set; } = false;
+	[Inject]
+	private NavigationManager _navigationManager { get; set; } = null!;
+	[Inject]
+	private IHttpContextAccessor _httpContextAccessor { get; set; } = null!;
 
-	[Inject] private ILocalStorageInterop _localStorage { get; set; } = null!;
-	[Inject] private ILocalThemeInterop _localTheme { get; set; } = null!;
+	public bool IsDarkMode
+	{
+		get => _isDarkMode;
+		set
+		{
+			_isDarkMode = value;
+			_navigationManager.NavigateTo($"api/v1/themes/{RequestedTheme}", true);
+		}
+	}
 
-	private string _darkModeClass
+	private bool _isDarkMode = false;
+	private string RequestedTheme
 	{
 		get
 		{
-			return _isDarkMode ? "dark" : "";
+			return _isDarkMode ? "dark" : "light";
 		}
 	}
 
-	protected async override Task OnAfterRenderAsync(bool firstRender)
+	protected override void OnInitialized()
 	{
-		if (firstRender)
+		var httpContext = _httpContextAccessor.HttpContext;
+		if (httpContext is not null && httpContext.Request.Cookies.TryGetValue("theme-preference", out string? themeCookie))
 		{
-			var result = await _localStorage.GetItem(DarkModeStorageKey);
-			if (bool.TryParse(result, out bool savedMode))
-			{
-				await SetDarkMode(savedMode);
-			}
-			else
-			{
-				var isBrowserDarkMode = await _localTheme.IsBrowserDarkMode();
-				var setMode = SetDarkMode(isBrowserDarkMode);
-				var updateStorage = _localStorage.SetItem(DarkModeStorageKey, isBrowserDarkMode.ToString());
-				await Task.WhenAll(setMode, updateStorage);
-			}
-		}
-	}
-
-	private async Task ToggleDarkmode(bool args)
-	{
-		var themeChange = _localTheme.SetIsDarkMode(_isDarkMode);
-		var storageChange = _localStorage.SetItem(DarkModeStorageKey, _isDarkMode.ToString());
-		await Task.WhenAll(themeChange, storageChange);
-	}
-
-	private async Task SetDarkMode(bool isDarkMode)
-	{
-		if (isDarkMode != _isDarkMode)
-		{
-			_isDarkMode = isDarkMode;
+			_isDarkMode = themeCookie == "dark";
 			StateHasChanged();
-			await _localTheme.SetIsDarkMode(_isDarkMode);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 using PokemonApp.Components;
 using PokemonApp.Configuration;
+using PokemonApp.Endpoints;
 using PokemonApp.Interop;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ILocalStorageInterop, LocalStorageInterop>();
 builder.Services.AddScoped<ILocalThemeInterop, LocalThemeInterop>();
 builder.Services.AddPokemonConfiguration(builder.Configuration);
@@ -29,5 +31,7 @@ app.UseAntiforgery();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapThemeEndpoints();
 
 app.Run();
