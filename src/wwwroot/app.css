@@ -1,7 +1,11 @@
-html, body {
+html, body, main {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: var(--background);
     color: var(--foreground)
+}
+
+main {
+    min-height: 100vh;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
