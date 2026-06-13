@@ -1,7 +1,8 @@
 ﻿@typeparam TItem
 
 <div class="pagination-controls">
-	<button @onclick="PreviousPage" disabled="@_isPreviousDisabled">@PreviousPageContent</button>
+    <button @onclick="FirstPage" disabled="@_isPreviousDisabled">@(FirstPageContent is not null ? FirstPageContent : _defaultFirst)</button>
+    <button @onclick="PreviousPage" disabled="@_isPreviousDisabled">@(PreviousPageContent is not null ? PreviousPageContent : _defaultPrevious)</button>
 
 	@foreach (var pageNumber in Enumerable.Range(1, TotalPages))
 	{
@@ -10,82 +11,113 @@
 		</button>
 	}
 
-	<button @onclick="NextPage" disabled="@_isNextDisabled">@NextPageContent</button>
+    <button @onclick="NextPage" disabled="@_isNextDisabled">@(NextPageContent is not null ? NextPageContent : _defaultNext)</button>
+	<button @onclick="LastPage" disabled="@_isNextDisabled">@(LastPageContent is not null ? LastPageContent : _defaultLast)</button>
 </div>
 
 @code {
-	[EditorRequired]
-	[Parameter]
-	public IEnumerable<TItem> Items { get; set; } = null!;
+    [EditorRequired]
+    [Parameter]
+    public IEnumerable<TItem> Items { get; set; } = null!;
 
-	[Parameter]
-	public int PageSize { get; set; } = 10;
+    [Parameter]
+    public int PageSize { get; set; } = 10;
 
-	[Parameter]
-	public RenderFragment PreviousPageContent { get; set; } = null!;
+    [Parameter]
+    public RenderFragment? PreviousPageContent { get; set; }
 
-	[Parameter]
-	public RenderFragment NextPageContent { get; set; } = null!;
+    [Parameter]
+    public RenderFragment? NextPageContent { get; set; }
 
-	[Parameter]
-	public int Value { get; set; }
+    [Parameter]
+    public RenderFragment? FirstPageContent { get; set; }
 
-	[Parameter]
-	public EventCallback<int> ValueChanged { get; set; }
+    [Parameter]
+    public RenderFragment? LastPageContent { get; set; }
 
-	[Parameter]
-	public EventCallback<IEnumerable<TItem>> OnPaginationItemsChanged { get; set; }
+    [Parameter]
+    public int Value { get; set; }
 
-	private int _currentPage { get; set; } = 1;
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
 
-	public int TotalPages => (int)Math.Ceiling(Items.Count() / (double)PageSize);
-	private bool _isPreviousDisabled => _currentPage == 1;
-	private bool _isNextDisabled => _currentPage == TotalPages;
+    [Parameter]
+    public EventCallback<IEnumerable<TItem>> OnPaginationItemsChanged { get; set; }
 
-	protected override async Task OnInitializedAsync()
-	{
-		await UpdateValues();
-	} 
+    private int _currentPage { get; set; } = 1;
+    private const string _defaultPrevious = "Previous";
+    private const string _defaultNext = "Next";
+    private const string _defaultFirst = "First";
+    private const string _defaultLast = "Last";
 
-	private IEnumerable<TItem> GetPaginatedItems()
-	{
-		return Items.Skip((_currentPage - 1) * PageSize).Take(PageSize);
-	}
+    public int TotalPages => (int)Math.Ceiling(Items.Count() / (double)PageSize);
+    private bool _isPreviousDisabled => _currentPage == 1;
+    private bool _isNextDisabled => _currentPage == TotalPages;
 
-	private string GetPageNumberClass(int pageNumber)
-	{
-		return _currentPage == pageNumber ? "active" : "";
-	}
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateValues();
+    } 
 
-	private async Task NextPage()
-	{
-		if (_currentPage < TotalPages)
-		{
-			_currentPage++;
-			await UpdateValues();
-		}
-	}
+    private IEnumerable<TItem> GetPaginatedItems()
+    {
+        return Items.Skip((_currentPage - 1) * PageSize).Take(PageSize);
+    }
 
-	private async Task PreviousPage()
-	{
-		if (_currentPage > 1)
-		{
-			_currentPage--;
-			await UpdateValues();
-		}
-	}
+    private string GetPageNumberClass(int pageNumber)
+    {
+        return _currentPage == pageNumber ? "active" : "";
+    }
 
-	private async Task GoToPage(int pageNumber)
-	{
-		_currentPage = pageNumber;
-		await UpdateValues();
-	}
+    private async Task NextPage()
+    {
+        if (_currentPage < TotalPages)
+        {
+            _currentPage++;
+            await UpdateValues();
+        }
+    }
 
-	private async Task UpdateValues()
-	{
-		Value = _currentPage;
-		var paginationEvent = OnPaginationItemsChanged.InvokeAsync(GetPaginatedItems());
-		var valueEvent = ValueChanged.InvokeAsync(Value);
-		await Task.WhenAll(paginationEvent, valueEvent);
-	}
+    private async Task PreviousPage()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            await UpdateValues();
+        }
+    }
+
+    private async Task GoToPage(int pageNumber)
+    {
+        if (pageNumber == _currentPage) return; 
+
+        _currentPage = Math.Clamp(pageNumber, 1, TotalPages);
+        await UpdateValues();
+    }
+
+    private async Task FirstPage()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage = 1;
+            await UpdateValues();            
+        }
+    }
+
+    private async Task LastPage()
+    {
+        if (_currentPage < TotalPages)
+        {
+            _currentPage = TotalPages;
+            await UpdateValues();
+        }
+    }
+
+    private async Task UpdateValues()
+    {
+        Value = _currentPage;
+        var paginationEvent = OnPaginationItemsChanged.InvokeAsync(GetPaginatedItems());
+        var valueEvent = ValueChanged.InvokeAsync(Value);
+        await Task.WhenAll(paginationEvent, valueEvent);
+    }
 }
