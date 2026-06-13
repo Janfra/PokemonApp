@@ -1,0 +1,32 @@
+﻿.pagination-controls{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+}
+
+    .pagination-controls button {
+        background-color: var(--background);
+        color: var(--muted-foreground);
+        border: 1px solid var(--chart-1);
+        padding: 5px 10px;
+        margin: 0 5px;
+        border-radius: 8px;
+    }
+
+    .pagination-controls button.active {
+        background-color: var(--secondary);
+        color: var(--secondary-foreground);
+        font-weight: bold;
+    }
+
+    .pagination-controls button:disabled {
+        background-color: var(--muted);
+        color: var(--muted-foreground);
+    }
+
+    .pagination-controls button:hover:enabled {
+        background-color: var(--secondary);
+        color: var(--secondary-foreground);
+        border-color: var(--ring);
+    }

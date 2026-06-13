@@ -1,0 +1,91 @@
+﻿@typeparam TItem
+
+<div class="pagination-controls">
+	<button @onclick="PreviousPage" disabled="@_isPreviousDisabled">@PreviousPageContent</button>
+
+	@foreach (var pageNumber in Enumerable.Range(1, TotalPages))
+	{
+		<button @onclick="() => GoToPage(pageNumber)" class="@GetPageNumberClass(pageNumber)">
+			@pageNumber
+		</button>
+	}
+
+	<button @onclick="NextPage" disabled="@_isNextDisabled">@NextPageContent</button>
+</div>
+
+@code {
+	[EditorRequired]
+	[Parameter]
+	public IEnumerable<TItem> Items { get; set; } = null!;
+
+	[Parameter]
+	public int PageSize { get; set; } = 10;
+
+	[Parameter]
+	public RenderFragment PreviousPageContent { get; set; } = null!;
+
+	[Parameter]
+	public RenderFragment NextPageContent { get; set; } = null!;
+
+	[Parameter]
+	public int Value { get; set; }
+
+	[Parameter]
+	public EventCallback<int> ValueChanged { get; set; }
+
+	[Parameter]
+	public EventCallback<IEnumerable<TItem>> OnPaginationItemsChanged { get; set; }
+
+	private int _currentPage { get; set; } = 1;
+
+	public int TotalPages => (int)Math.Ceiling(Items.Count() / (double)PageSize);
+	private bool _isPreviousDisabled => _currentPage == 1;
+	private bool _isNextDisabled => _currentPage == TotalPages;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await UpdateValues();
+	} 
+
+	private IEnumerable<TItem> GetPaginatedItems()
+	{
+		return Items.Skip((_currentPage - 1) * PageSize).Take(PageSize);
+	}
+
+	private string GetPageNumberClass(int pageNumber)
+	{
+		return _currentPage == pageNumber ? "active" : "";
+	}
+
+	private async Task NextPage()
+	{
+		if (_currentPage < TotalPages)
+		{
+			_currentPage++;
+			await UpdateValues();
+		}
+	}
+
+	private async Task PreviousPage()
+	{
+		if (_currentPage > 1)
+		{
+			_currentPage--;
+			await UpdateValues();
+		}
+	}
+
+	private async Task GoToPage(int pageNumber)
+	{
+		_currentPage = pageNumber;
+		await UpdateValues();
+	}
+
+	private async Task UpdateValues()
+	{
+		Value = _currentPage;
+		var paginationEvent = OnPaginationItemsChanged.InvokeAsync(GetPaginatedItems());
+		var valueEvent = ValueChanged.InvokeAsync(Value);
+		await Task.WhenAll(paginationEvent, valueEvent);
+	}
+}

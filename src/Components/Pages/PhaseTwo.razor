@@ -19,18 +19,27 @@
 }
 else
 {
-<div class="flex-wrap d-inline-flex">
-	@foreach (var pokemon in _pokemonList)
-	{
-		<div class="m-1">
-			<PokemonDisplay Pokemon="@pokemon"/>
-		</div>
-	}
-</div>
+	<div class="flex-wrap d-inline-flex">
+			@if(_paginatedPokemon is not null)
+			{
+				@foreach (var pokemon in _paginatedPokemon)
+				{
+					<div class="m-1">
+						<PokemonDisplay Pokemon="@pokemon"/>
+					</div>
+				}			
+			}
+	</div>
+	
+	<Pagination TItem="Pokemon" Items="_pokemonList" OnPaginationItemsChanged="SetPaginatedPokemon">
+		<PreviousPageContent>Previous</PreviousPageContent>
+		<NextPageContent>Next</NextPageContent>
+	</Pagination>
 }
 
 @code {
 	private List<Pokemon>? _pokemonList;
+	private IEnumerable<Pokemon>? _paginatedPokemon;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -44,5 +53,10 @@ else
 		{
 			_pokemonList = okResult.Value;
 		}
+	}
+
+	private void SetPaginatedPokemon(IEnumerable<Pokemon> args)
+	{
+		_paginatedPokemon = args;
 	}
 }
