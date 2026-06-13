@@ -4,7 +4,7 @@
     <button @onclick="FirstPage" disabled="@_isPreviousDisabled">@(FirstPageContent is not null ? FirstPageContent : _defaultFirst)</button>
     <button @onclick="PreviousPage" disabled="@_isPreviousDisabled">@(PreviousPageContent is not null ? PreviousPageContent : _defaultPrevious)</button>
 
-	@foreach (var pageNumber in Enumerable.Range(1, TotalPages))
+	@foreach (var pageNumber in IsSliding ? GetSlidingPageNumberRange() : GetStaticPageNumberRange())
 	{
 		<button @onclick="() => GoToPage(pageNumber)" class="@GetPageNumberClass(pageNumber)">
 			@pageNumber
@@ -22,6 +22,12 @@
 
     [Parameter]
     public int PageSize { get; set; } = 10;
+
+    [Parameter]
+    public int MaxPaginationLength { get; set; } = 10;
+
+    [Parameter]
+    public bool IsSliding { get; set; } = false;
 
     [Parameter]
     public RenderFragment? PreviousPageContent { get; set; }
@@ -62,6 +68,53 @@
     private IEnumerable<TItem> GetPaginatedItems()
     {
         return Items.Skip((_currentPage - 1) * PageSize).Take(PageSize);
+    }
+
+    private IEnumerable<int> GetStaticPageNumberRange()
+    {
+        // Cache total pages since it is calculated in property each time
+        var cacheTotalPages = TotalPages;
+        if (!IsValidPageNumberRange(cacheTotalPages))
+        {
+            return Array.Empty<int>();
+        }
+
+        int blockIndex = (_currentPage - 1) / MaxPaginationLength;
+        int rangeStart = (blockIndex * MaxPaginationLength) + 1;
+        int rangeEnd = Math.Min(rangeStart + MaxPaginationLength - 1, cacheTotalPages);
+        int rangeSize = rangeEnd - rangeStart + 1;
+        return Enumerable.Range(rangeStart, rangeSize);
+    }
+
+    private IEnumerable<int> GetSlidingPageNumberRange()
+    {
+        // Cache total pages since it is calculated in property each time
+        var cacheTotalPages = TotalPages;
+        if (!IsValidPageNumberRange(cacheTotalPages))
+        {
+            return Array.Empty<int>();
+        }
+
+        int currentWindowLength = Math.Min(MaxPaginationLength, TotalPages);
+        int adjustedWindowLength = currentWindowLength - 1;
+        int rangeStart = _currentPage - adjustedWindowLength / 2;
+
+        if (rangeStart < 1)
+        {
+            rangeStart = 1;
+        }
+
+        if (rangeStart + adjustedWindowLength > cacheTotalPages)
+        {
+            rangeStart = cacheTotalPages - currentWindowLength + 1;
+        }
+
+        return Enumerable.Range(rangeStart, currentWindowLength);
+    }
+
+    private bool IsValidPageNumberRange(int totalPages)
+    {
+        return totalPages > 0 && _currentPage > 0 && _currentPage <= totalPages;
     }
 
     private string GetPageNumberClass(int pageNumber)
