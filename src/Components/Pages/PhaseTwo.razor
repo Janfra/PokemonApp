@@ -19,7 +19,7 @@
 }
 else
 {
-	<div class="flex-wrap d-inline-flex">
+	<div class="flex-wrap d-flex justify-content-center">
 			@if(_paginatedPokemon is not null)
 			{
 				@foreach (var pokemon in _paginatedPokemon)
@@ -31,7 +31,7 @@ else
 			}
 	</div>
 	
-	<Pagination TItem="Pokemon" Items="_pokemonList" OnPaginationItemsChanged="SetPaginatedPokemon"/>
+	<Pagination TItem="Pokemon" Items="_pokemonList" OnPaginationItemsChanged="SetPaginatedPokemon" IsSliding=true/>
 }
 
 @code {
