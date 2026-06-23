@@ -16,9 +16,8 @@
 </div>
 
 @code {
-    [EditorRequired]
     [Parameter]
-    public IEnumerable<TItem> Items { get; set; } = null!;
+    public IEnumerable<TItem>? Items { get; set; }
 
     [Parameter]
     public int PageSize { get; set; } = 10;
@@ -28,6 +27,9 @@
 
     [Parameter]
     public bool IsSliding { get; set; } = false;
+
+    [Parameter]
+    public int? TotalPagesOverride { get; set; } = null;
 
     [Parameter]
     public RenderFragment? PreviousPageContent { get; set; }
@@ -42,44 +44,60 @@
     public RenderFragment? LastPageContent { get; set; }
 
     [Parameter]
-    public int Value { get; set; }
+    public int Page { get; set; } = 1;
 
     [Parameter]
-    public EventCallback<int> ValueChanged { get; set; }
+    public EventCallback<int> OnPageChanged { get; set; }
 
+    /// <summary>
+    /// On page change, it is invoked with the items included in the page based on items inside <c>Items</c>.
+    /// </summary>
     [Parameter]
     public EventCallback<IEnumerable<TItem>> OnPaginationItemsChanged { get; set; }
 
-    private int _currentPage { get; set; } = 1;
+    public int TotalPages
+    {
+        get
+        {
+            if (TotalPagesOverride is not null || Items is null)
+            {
+                return TotalPagesOverride ?? 0;
+            }
+            else
+            {
+                return (int)Math.Ceiling(Items.Count() / (double)PageSize);
+            }
+        }
+    }
+
     private const string _defaultPrevious = "Previous";
     private const string _defaultNext = "Next";
     private const string _defaultFirst = "First";
     private const string _defaultLast = "Last";
 
-    public int TotalPages => (int)Math.Ceiling(Items.Count() / (double)PageSize);
-    private bool _isPreviousDisabled => _currentPage == 1;
-    private bool _isNextDisabled => _currentPage == TotalPages;
+    private bool _isPreviousDisabled => Page == 1;
+    private bool _isNextDisabled => Page == TotalPages;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnParametersSet()
     {
-        await UpdateValues();
-    } 
+        Page = Math.Clamp(Page, 1, TotalPages);
+    }
 
     private IEnumerable<TItem> GetPaginatedItems()
     {
-        return Items.Skip((_currentPage - 1) * PageSize).Take(PageSize);
+        return Items is not null ? Items.Skip((Page - 1) * PageSize).Take(PageSize) : Array.Empty<TItem>();
     }
 
     private IEnumerable<int> GetStaticPageNumberRange()
     {
-        // Cache total pages since it is calculated in property each time
+        // Cache total pages since it can be calculated in property each time
         var cacheTotalPages = TotalPages;
-        if (!IsValidPageNumberRange(cacheTotalPages))
+        if (cacheTotalPages <= 0)
         {
             return Array.Empty<int>();
         }
 
-        int blockIndex = (_currentPage - 1) / MaxPaginationLength;
+        int blockIndex = (Page - 1) / MaxPaginationLength;
         int rangeStart = (blockIndex * MaxPaginationLength) + 1;
         int rangeEnd = Math.Min(rangeStart + MaxPaginationLength - 1, cacheTotalPages);
         int rangeSize = rangeEnd - rangeStart + 1;
@@ -88,16 +106,16 @@
 
     private IEnumerable<int> GetSlidingPageNumberRange()
     {
-        // Cache total pages since it is calculated in property each time
+        // Cache total pages since it can be calculated in property each time
         var cacheTotalPages = TotalPages;
-        if (!IsValidPageNumberRange(cacheTotalPages))
+        if (cacheTotalPages <= 0)
         {
             return Array.Empty<int>();
         }
 
         int currentWindowLength = Math.Min(MaxPaginationLength, TotalPages);
         int adjustedWindowLength = currentWindowLength - 1;
-        int rangeStart = _currentPage - adjustedWindowLength / 2;
+        int rangeStart = Page - adjustedWindowLength / 2;
 
         if (rangeStart < 1)
         {
@@ -112,65 +130,66 @@
         return Enumerable.Range(rangeStart, currentWindowLength);
     }
 
-    private bool IsValidPageNumberRange(int totalPages)
-    {
-        return totalPages > 0 && _currentPage > 0 && _currentPage <= totalPages;
-    }
-
     private string GetPageNumberClass(int pageNumber)
     {
-        return _currentPage == pageNumber ? "active" : "";
+        return Page == pageNumber ? "active" : "";
     }
 
     private async Task NextPage()
     {
-        if (_currentPage < TotalPages)
+        if (Page < TotalPages)
         {
-            _currentPage++;
+            Page++;
             await UpdateValues();
         }
     }
 
     private async Task PreviousPage()
     {
-        if (_currentPage > 1)
+        if (Page > 1)
         {
-            _currentPage--;
+            Page--;
             await UpdateValues();
         }
     }
 
     private async Task GoToPage(int pageNumber)
     {
-        if (pageNumber == _currentPage) return; 
+        if (pageNumber == Page) return;
 
-        _currentPage = Math.Clamp(pageNumber, 1, TotalPages);
+        Page = Math.Clamp(pageNumber, 1, TotalPages);
         await UpdateValues();
     }
 
     private async Task FirstPage()
     {
-        if (_currentPage > 1)
+        if (Page > 1)
         {
-            _currentPage = 1;
+            Page = 1;
             await UpdateValues();            
         }
     }
 
     private async Task LastPage()
     {
-        if (_currentPage < TotalPages)
+        if (Page < TotalPages)
         {
-            _currentPage = TotalPages;
+            Page = TotalPages;
             await UpdateValues();
         }
     }
 
     private async Task UpdateValues()
     {
-        Value = _currentPage;
-        var paginationEvent = OnPaginationItemsChanged.InvokeAsync(GetPaginatedItems());
-        var valueEvent = ValueChanged.InvokeAsync(Value);
-        await Task.WhenAll(paginationEvent, valueEvent);
+        var valueEvent = OnPageChanged.InvokeAsync(Page);
+        if (OnPaginationItemsChanged.HasDelegate)
+        {
+            var paginationEvent = OnPaginationItemsChanged.InvokeAsync(GetPaginatedItems());        
+            await Task.WhenAll(paginationEvent, valueEvent);
+        }
+        else
+        {
+            await valueEvent;
+        }
     }
 }
