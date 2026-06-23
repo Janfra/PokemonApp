@@ -34,19 +34,28 @@ public class PokemonService : IPokemonService
         return TypedResults.Ok(pokemon);
     }
 
-    public async Task<Results<Ok<List<Pokemon>>, NotFound>> GetPokemonsAsync(int length = 10, int fromId = 0)
+    public async Task<Results<Ok<PageResult<Pokemon>>, NotFound>> GetPokemonsAsync(PageRequest request)
     {
-        var response = await _httpClient.GetFromJsonAsync<NamedAPIResourceList>($"pokemon/?limit={length}&offset={fromId}");
-
-        if (response is null) 
+        var response = await _httpClient.GetFromJsonAsync<NamedAPIResourceList>($"pokemon/?limit={request.PageSize}&offset={request.GetOffset()}");
+        if (response is null || response.Results is null) 
         {
             return TypedResults.NotFound();
         }
 
         var pokemonListRequests = response.Results.Select(r => _httpClient.GetFromJsonAsync<Pokemon>(new Uri(r.Url)));
         var listResult = await Task.WhenAll(pokemonListRequests);
-
         List<Pokemon> pokemons = listResult.Where(p => p is not null).Cast<Pokemon>().ToList();
-        return TypedResults.Ok(pokemons);
+        if (pokemons.Count <= 0)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.Ok(new PageResult<Pokemon>
+        {
+            Result = pokemons,
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = response.Count,
+        });
     }
 }
