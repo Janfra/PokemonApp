@@ -1,0 +1,63 @@
+﻿@using Microsoft.AspNetCore.Http.HttpResults
+@using PokemonApp.Services
+@rendermode InteractiveServer
+@inject IPokemonService PokemonService
+
+@if (_pokemonPageResult is null)
+{
+	<p class="text-center"><em>Loading list...</em></p>
+}
+else
+{
+	<article>
+		<div class="pokemon-grid">
+			@foreach (var pokemon in _pokemonPageResult.Result)
+			{
+				<div class="m-1">
+					<PokemonDisplay Pokemon="@pokemon" />
+				</div>
+			}
+		</div>
+
+		<Pagination TItem="Pokemon" Page=Page PageSize=_pokemonPageResult.PageSize IsSliding=true TotalPagesOverride=_pokemonPageResult.TotalPages OnPageChanged=OnPageChanged />
+	</article>
+}
+
+
+@code {
+	[Parameter]
+	public int PageSize { get; set; } = 10;
+
+	[Parameter]
+	public int Page { get; set; } = 1;
+
+	[Parameter]
+	public EventCallback<int> OnPageChanged { get; set; }
+
+	private PageResult<Pokemon>? _pokemonPageResult;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		await RequestPokemonPage();
+	}
+
+	private async Task RequestPokemonPage()
+	{
+		PageRequest request = new()
+		{
+			Page = Page,
+			PageSize = PageSize
+		};
+
+		var results = await PokemonService.GetPokemonsAsync(request);
+		if (results.Result is NotFound)
+		{
+			// Handle not found
+
+		}
+		else if (results.Result is Ok<PageResult<Pokemon>> okResult)
+		{
+			_pokemonPageResult = okResult.Value;
+		}
+	}
+}
