@@ -1,8 +1,5 @@
 ﻿@page "/phase-two"
-@using Microsoft.AspNetCore.Http.HttpResults
-@using PokemonApp.Services
 @rendermode InteractiveServer
-@inject IPokemonService PokemonService;
 
 <div class="mb-5 info-card">
 	<h3><b>Phase Two - Pagination Display</b></h3>
@@ -13,47 +10,23 @@
 	</ol>
 </div>
 
-@if (_pokemonList is null)
-{
-	<p class="text-center"><em>Loading list...</em></p>
-}
-else
-{
-	<div class="flex-wrap d-flex justify-content-center">
-			@if(_paginatedPokemon is not null)
-			{
-				@foreach (var pokemon in _paginatedPokemon)
-				{
-					<div class="m-1">
-						<PokemonDisplay Pokemon="@pokemon"/>
-					</div>
-				}			
-			}
-	</div>
-	
-	<Pagination TItem="Pokemon" Items="_pokemonList" OnPaginationItemsChanged="SetPaginatedPokemon" IsSliding=true/>
-}
+<PokemonGrid Page=Page OnPageChanged=HandlePageChange />
 
-@code {
-	private List<Pokemon>? _pokemonList;
-	private IEnumerable<Pokemon>? _paginatedPokemon;
+@code{
+	[SupplyParameterFromQuery(Name = "page")]
+	public int Page { get; set; } = 1;
 
-	protected override async Task OnInitializedAsync()
+	[Inject]
+	private NavigationManager _navigationManager { get; set; } = null!;
+
+	protected override void OnParametersSet()
 	{
-		var results = await PokemonService.GetPokemonsAsync(20);
-		if (results.Result is NotFound)
-		{
-			// Handle not found
-			_pokemonList = new();
-		}
-		else if (results.Result is Ok<List<Pokemon>> okResult)
-		{
-			_pokemonList = okResult.Value;
-		}
+		Page = Math.Max(1, Page);
 	}
 
-	private void SetPaginatedPokemon(IEnumerable<Pokemon> args)
+	private void HandlePageChange(int pageNumber)
 	{
-		_paginatedPokemon = args;
+		string nextUrl = _navigationManager.GetUriWithQueryParameter("page", pageNumber);
+		_navigationManager.NavigateTo(nextUrl);
 	}
 }
