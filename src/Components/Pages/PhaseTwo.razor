@@ -10,10 +10,12 @@
 	</ol>
 </div>
 
-<PokemonGrid Page=Page OnPageChanged=HandlePageChange />
+<PokemonGrid Page=Page HrefFactory=GetPageURL />
 
 @code{
-	[SupplyParameterFromQuery(Name = "page")]
+	private const string _pageParameterQueryName = "page";
+
+	[SupplyParameterFromQuery(Name = _pageParameterQueryName)]
 	public int Page { get; set; } = 1;
 
 	[Inject]
@@ -24,9 +26,8 @@
 		Page = Math.Max(1, Page);
 	}
 
-	private void HandlePageChange(int pageNumber)
+	private string GetPageURL(int pageNumber)
 	{
-		string nextUrl = _navigationManager.GetUriWithQueryParameter("page", pageNumber);
-		_navigationManager.NavigateTo(nextUrl);
+		return _navigationManager.GetUriWithQueryParameter(_pageParameterQueryName, pageNumber);
 	}
 }
