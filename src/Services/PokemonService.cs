@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using PokemonApp.Models;
+using System.Collections.Concurrent;
 
 namespace PokemonApp.Services;
 
@@ -43,10 +44,29 @@ public class PokemonService : IPokemonService
             return TypedResults.NotFound();
         }
 
-        var pokemonListRequests = response.Results.Select(r => _httpClient.GetFromJsonAsync<Pokemon>(new Uri(r.Url)));
-        var listResult = await Task.WhenAll(pokemonListRequests);
+        var pokemons = new ConcurrentBag<Pokemon>();
+        var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 5 };
 
-        List<Pokemon> pokemons = listResult.Where(p => p is not null).Cast<Pokemon>().ToList();
-        return TypedResults.Ok(pokemons);
+        await Parallel.ForEachAsync(response.Results, parallelOptions, async (resource, cancellationToken) =>
+        {
+            var p = await _httpClient.GetFromJsonAsync<Pokemon>(new Uri(resource.Url), cancellationToken);
+            if (p is not null)
+            {
+                pokemons.Add(p);
+            }
+        });
+
+        if (pokemons.IsEmpty)
+        {
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.Ok(new PageResult<Pokemon>
+        {
+            Result = pokemons.OrderBy(p => p.Id).ToList(),
+            Page = request.Page,
+            PageSize = request.PageSize,
+            TotalCount = response.Count,
+        });
     }
 }
