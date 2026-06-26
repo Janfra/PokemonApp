@@ -1,13 +1,13 @@
 ﻿@using PokemonApp.Models
 
-<div class="pokemon-display-container">
-	<p class="pokemon-id muted-text text-small">#@Pokemon.Id.ToString("D3")</p>
+<article class="pokemon-display-container">
+	<span class="pokemon-id muted-text text-small">#@Pokemon.Id.ToString("D3")</span>
 	<div class="pokemon-shiny-toggle-wrapper">
 		<Toggle @bind-value=_isShiny KnobContent="✨" IsLowOpacity=true />
 	</div>
-	<img src="@Sprite" alt="@Pokemon.Name" class="sprite-display" />
+	<img src="@Sprite" alt="Sprite of @Pokemon.Name" class="sprite-display" />
 	<p class="pokemon-name">@Pokemon.Name</p>
-</div>
+</article>
 
 @code {
 	[EditorRequired]

@@ -1,0 +1,162 @@
+﻿<nav aria-label="pagination">
+    <ul class="pagination-controls">
+        @if (_isPreviousDisabled)
+        {
+            <li class="pagination-item">
+                <span aria-disabled="true" class="pagination-link disabled">
+                    @(FirstPageContent is not null ? FirstPageContent : _defaultFirst)
+                </span>
+            </li>
+            <li class="pagination-item">
+                <span aria-disabled="true" class="pagination-link disabled">
+                    @(PreviousPageContent is not null ? PreviousPageContent : _defaultPrevious)
+                </span>
+            </li>
+        }
+        else
+        {
+            <li class="pagination-item">
+                <NavLink href="@GetURLForPageNumber(1)" Match="NavLinkMatch.All" class="pagination-link">
+                    @(FirstPageContent is not null ? FirstPageContent : _defaultFirst)
+                </NavLink>
+            </li>
+            <li class="pagination-item">
+                <NavLink href="@GetURLForPageNumber(Page - 1)" Match="NavLinkMatch.All" class="pagination-link">
+                    @(PreviousPageContent is not null ? PreviousPageContent : _defaultPrevious)
+                </NavLink>
+            </li>
+        }
+
+        @foreach (var pageNumber in IsSliding ? GetSlidingPageNumberRange() : GetFixedPageNumberRange())
+	    {
+            <li class="pagination-item">
+                <NavLink href=@GetURLForPageNumber(pageNumber) Match="NavLinkMatch.All" class="pagination-link">
+			        @pageNumber
+		        </NavLink>
+            </li>
+	    }
+
+        @if (_isNextDisabled)
+        {
+            <li class="pagination-item">
+                <span aria-disabled="true" class="pagination-link disabled">
+                    @(NextPageContent is not null ? NextPageContent : _defaultNext)
+                </span>
+            </li>
+            <li class="pagination-item">
+                <span aria-disabled="true" class="pagination-link disabled">
+                    @(LastPageContent is not null ? LastPageContent : _defaultLast)
+                </span>
+            </li>
+        }
+        else
+        {
+            <li class="pagination-item">
+                <NavLink href=@GetURLForPageNumber(Page + 1) Match="NavLinkMatch.All" class="pagination-link">
+                    @(NextPageContent is not null ? NextPageContent : _defaultNext)
+                </NavLink>
+            </li>
+            <li class="pagination-item">
+                <NavLink href=@GetURLForPageNumber(TotalPages) Match="NavLinkMatch.All" class="pagination-link">
+                    @(LastPageContent is not null ? LastPageContent : _defaultLast)
+                </NavLink>
+            </li>
+        }
+    </ul>
+</nav>
+
+@code {
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    [Parameter]
+    public int MaxPaginationLength { get; set; } = 10;
+
+    [Parameter]
+    public bool IsSliding { get; set; } = false;
+
+    [Parameter]
+    public int TotalPages { get; set; } = 0;
+
+    [Parameter]
+    public RenderFragment? PreviousPageContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? NextPageContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? FirstPageContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? LastPageContent { get; set; }
+
+    [Parameter]
+    public int Page { get; set; } = 1;
+
+    [Parameter]
+    public Func<int, string>? HrefFactory { get; set; }
+
+    private const string _defaultPrevious = "‹";
+    private const string _defaultNext = "›";
+    private const string _defaultFirst = "«";
+    private const string _defaultLast = "»";
+
+    private bool _isPreviousDisabled => Page == 1;
+    private bool _isNextDisabled => Page == TotalPages;
+
+    protected override void OnParametersSet()
+    {
+        Page = Math.Clamp(Page, 1, TotalPages);
+        TotalPages = Math.Max(0, TotalPages);
+        PageSize = Math.Max(1, PageSize);
+        MaxPaginationLength = Math.Max(1, MaxPaginationLength);
+    }
+
+    private string GetURLForPageNumber(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages)
+        {
+            return string.Empty;
+        }
+
+        return HrefFactory is not null ? HrefFactory.Invoke(pageNumber) : string.Empty;
+    }
+
+    private IEnumerable<int> GetFixedPageNumberRange()
+    {
+        if (TotalPages <= 0)
+        {
+            return Array.Empty<int>();
+        }
+
+        int blockIndex = (Page - 1) / MaxPaginationLength;
+        int rangeStart = (blockIndex * MaxPaginationLength) + 1;
+        int rangeEnd = Math.Min(rangeStart + MaxPaginationLength - 1, TotalPages);
+        int rangeSize = rangeEnd - rangeStart + 1;
+        return Enumerable.Range(rangeStart, rangeSize);
+    }
+
+    private IEnumerable<int> GetSlidingPageNumberRange()
+    {
+        if (TotalPages <= 0)
+        {
+            return Array.Empty<int>();
+        }
+
+        int currentWindowLength = Math.Min(MaxPaginationLength, TotalPages);
+        int adjustedWindowLength = currentWindowLength - 1;
+        int rangeStart = Page - adjustedWindowLength / 2;
+
+        if (rangeStart < 1)
+        {
+            rangeStart = 1;
+        }
+
+        if (rangeStart + adjustedWindowLength > TotalPages)
+        {
+            rangeStart = TotalPages - currentWindowLength + 1;
+        }
+
+        return Enumerable.Range(rangeStart, currentWindowLength);
+    }
+}

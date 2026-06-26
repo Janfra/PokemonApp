@@ -35,11 +35,10 @@ public class PokemonService : IPokemonService
         return TypedResults.Ok(pokemon);
     }
 
-    public async Task<Results<Ok<List<Pokemon>>, NotFound>> GetPokemonsAsync(int length = 10, int fromId = 0)
+    public async Task<Results<Ok<PageResult<Pokemon>>, NotFound>> GetPokemonsAsync(PageRequest request)
     {
-        var response = await _httpClient.GetFromJsonAsync<NamedAPIResourceList>($"pokemon/?limit={length}&offset={fromId}");
-
-        if (response is null) 
+        var response = await _httpClient.GetFromJsonAsync<NamedAPIResourceList>($"pokemon/?limit={request.PageSize}&offset={request.GetOffset()}");
+        if (response is null || response.Results is null) 
         {
             return TypedResults.NotFound();
         }

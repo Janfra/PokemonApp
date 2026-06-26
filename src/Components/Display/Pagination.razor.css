@@ -1,0 +1,67 @@
+﻿.pagination-controls {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+}
+
+    .pagination-controls .pagination-item:first-child {
+        border-radius: 8px 0px 0px 8px;
+        margin-left: 5px;
+    }
+
+    .pagination-controls .pagination-item:last-of-type {
+        border-radius: 0px 8px 8px 0px;
+        margin-right: 5px;
+    }
+
+    .pagination-controls .pagination-item:first-child ::deep .pagination-link {
+        border-radius: 8px 0px 0px 8px;
+    }
+
+    .pagination-controls .pagination-item:last-of-type ::deep .pagination-link {
+        border-radius: 0px 8px 8px 0px;
+    }
+
+    .pagination-controls .pagination-item {
+        border: 1px solid var(--chart-1);
+    }
+
+    .pagination-controls ::deep .pagination-link {
+        background-color: var(--background);
+        color: var(--muted-foreground);
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        width: 100%;
+        padding: 0.4rem 0.8rem;
+        text-decoration: none;
+        font-weight: 500;
+        transition: background-color 0.2s, color 0.2s;
+        cursor: pointer;
+    }
+
+    .pagination-controls ::deep a.active {
+        background-color: var(--accent);
+        color: var(--accent-foreground);
+        font-weight: bold;
+    }
+
+    .pagination-controls ::deep .pagination-link.disabled {
+        background-color: var(--muted);
+        color: var(--muted-foreground);
+        cursor: default;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    .pagination-controls ::deep .pagination-link:hover {
+        background-color: var(--secondary);
+        color: var(--secondary-foreground);
+    }
+
+    .pagination-controls .pagination-item:hover {
+        border-color: var(--ring);
+    }

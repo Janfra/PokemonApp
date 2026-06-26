@@ -7,6 +7,7 @@
     padding: 16px;
     width: 220px;
     height: 275px;
+    flex: 0, 0;
     align-content: center;
     transition: 0.15s ease-out;
 }

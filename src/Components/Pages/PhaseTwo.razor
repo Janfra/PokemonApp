@@ -1,8 +1,5 @@
 ﻿@page "/phase-two"
-@using Microsoft.AspNetCore.Http.HttpResults
-@using PokemonApp.Services
 @rendermode InteractiveServer
-@inject IPokemonService PokemonService;
 
 <div class="mb-5 info-card">
 	<h3><b>Phase Two - Pagination Display</b></h3>
@@ -13,36 +10,24 @@
 	</ol>
 </div>
 
-@if (_pokemonList is null)
-{
-	<p class="text-center"><em>Loading list...</em></p>
-}
-else
-{
-<div class="flex-wrap d-inline-flex">
-	@foreach (var pokemon in _pokemonList)
+<PokemonGrid Page=Page HrefFactory=GetPageURL />
+
+@code{
+	private const string _pageParameterQueryName = "page";
+
+	[SupplyParameterFromQuery(Name = _pageParameterQueryName)]
+	public int Page { get; set; } = 1;
+
+	[Inject]
+	private NavigationManager _navigationManager { get; set; } = null!;
+
+	protected override void OnParametersSet()
 	{
-		<div class="m-1">
-			<PokemonDisplay Pokemon="@pokemon"/>
-		</div>
+		Page = Math.Max(1, Page);
 	}
-</div>
-}
 
-@code {
-	private List<Pokemon>? _pokemonList;
-
-	protected override async Task OnInitializedAsync()
+	private string GetPageURL(int pageNumber)
 	{
-		var results = await PokemonService.GetPokemonsAsync(20);
-		if (results.Result is NotFound)
-		{
-			// Handle not found
-			_pokemonList = new();
-		}
-		else if (results.Result is Ok<List<Pokemon>> okResult)
-		{
-			_pokemonList = okResult.Value;
-		}
+		return _navigationManager.GetUriWithQueryParameter(_pageParameterQueryName, pageNumber);
 	}
 }
