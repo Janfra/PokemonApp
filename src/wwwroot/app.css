@@ -106,6 +106,27 @@ h1:focus {
     --sidebar-accent-foreground: #28151a;
     --sidebar-border: #ebe0e3;
     --sidebar-ring: #ff4d7c;
+    /* Colours for pokemon types */
+    --type-normal: #A8A77A;
+    --type-fire: #EE8130;
+    --type-water: #6390F0;
+    --type-electric: #F7D02C;
+    --type-grass: #7AC74C;
+    --type-ice: #96D9D6;
+    --type-fighting: #C22E28;
+    --type-poison: #A33EA1;
+    --type-ground: #E2BF65;
+    --type-flying: #A98FF3;
+    --type-psychic: #F95587;
+    --type-bug: #A6B91A;
+    --type-rock: #B6A136;
+    --type-ghost: #705746;
+    --type-dragon: #6F35FC;
+    --type-steel: #B7B7CE;
+    --type-fairy: #D685AD;
+    --type-dark: #705746;
+    --type-light-text: #FFFFFF;
+    --type-dark-text: #0a0a0a;
 }
 
 .dark {
@@ -141,4 +162,95 @@ h1:focus {
     --sidebar-accent-foreground: #f6f4f4;
     --sidebar-border: #432d33;
     --sidebar-ring: #ff668f;
+}
+
+/* Per Pokemon Type Backgrounds */
+.type-normal {
+    background-color: var(--type-normal);
+    color: var(--type-dark-text);
+}
+
+.type-fire {
+    background-color: var(--type-fire);
+    color: var(--type-light-text);
+}
+
+.type-water {
+    background-color: var(--type-water);
+    color: var(--type-light-text);
+}
+
+.type-electric {
+    background-color: var(--type-electric);
+    color: var(--type-dark-text);
+}
+
+.type-grass {
+    background-color: var(--type-grass);
+    color: var(--type-dark-text);
+}
+
+.type-ice {
+    background-color: var(--type-ice);
+    color: var(--type-dark-text);
+}
+
+.type-fighting {
+    background-color: var(--type-fighting);
+    color: var(--type-light-text);
+}
+
+.type-poison {
+    background-color: var(--type-poison);
+    color: var(--type-light-text);
+}
+
+.type-ground {
+    background-color: var(--type-ground);
+    color: var(--type-dark-text);
+}
+
+.type-flying {
+    background-color: var(--type-flying);
+    color: var(--type-light-text);
+}
+
+.type-psychic {
+    background-color: var(--type-psychic);
+    color: var(--type-light-text);
+}
+
+.type-bug {
+    background-color: var(--type-bug);
+    color: var(--type-dark-text);
+}
+
+.type-rock {
+    background-color: var(--type-rock);
+    color: var(--type-light-text);
+}
+
+.type-ghost {
+    background-color: var(--type-ghost);
+    color: var(--type-light-text);
+}
+
+.type-dragon {
+    background-color: var(--type-dragon);
+    color: var(--type-light-text);
+}
+
+.type-steel {
+    background-color: var(--type-steel);
+    color: var(--type-dark-text);
+}
+
+.type-fairy {
+    background-color: var(--type-fairy);
+    color: var(--type-light-text);
+}
+
+.type-dark {
+    background-color: var(--type-dark);
+    color: var(--type-dark-text);
 }
