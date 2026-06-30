@@ -7,6 +7,15 @@
 	</div>
 	<img src="@Sprite" alt="Sprite of @Pokemon.Name" class="sprite-display" />
 	<p class="pokemon-name">@Pokemon.Name</p>
+
+	<div class="type-badge-container">
+		@foreach (var type in Pokemon.Types)
+		{
+			<div class="type-badge type-@type.Type.Name">
+				<p>@type.Type.Name</p>
+			</div>
+		}
+	</div>
 </article>
 
 @code {

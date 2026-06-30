@@ -6,10 +6,9 @@
     border-radius: 12px;
     padding: 16px;
     width: 220px;
-    height: 275px;
-    flex: 0, 0;
-    align-content: center;
+    height: 300px;
     transition: 0.15s ease-out;
+    overflow: clip;
 }
 
 .pokemon-display-container:hover {
@@ -17,23 +16,29 @@
 }
 
 .sprite-display {
-    display: block;
+    display: flex;
     border: 2px solid var(--border);
     border-radius: 50%;
     background-color: var(--card);
     margin: 10px auto;
     padding: 14px;
+    min-height: 128px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
 }
 
 .pokemon-name {
     margin-top: 10px;
+    margin-bottom: 0.5em;
     font-weight: bolder;
-    font-size: 30px;
-    text-shadow: 1px 1px 2px var(--muted);
+    font-size: 1.9rem;
+    text-shadow: -1px 1px 1px var(--muted-foreground);
     text-align: center;
     color: var(--popover-foreground);
     text-transform: capitalize;
     cursor: default;
+    line-height: 2rem;
 }
 
 .pokemon-id {
@@ -48,4 +53,27 @@
     position: absolute;
     top: 5%;
     right: 5%;
+}
+
+.type-badge-container {
+    display: flex;
+    justify-content: center;
+    margin: 0px auto;
+    width: 70%;
+    gap: 5px;
+    cursor: default;
+}
+
+.type-badge {
+    border-radius: 16px;
+    padding: 5px;
+    text-align: center;
+    text-transform: capitalize;
+    font-size: 0.75rem;
+    font-weight: 700;
+    min-width: 50%;
+}
+
+.type-badge p {
+    margin: 0px;
 }
