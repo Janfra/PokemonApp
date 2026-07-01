@@ -13,18 +13,26 @@ else
 		<div class="pokemon-grid">
 			@foreach (var pokemon in _pokemonPageResult.Result)
 			{
+				if(pokemon.Id > _maxAllowedIndex)
+				{
+					break;
+				}
+
 				<div class="m-1">
 					<PokemonDisplay Pokemon="@pokemon" />
-				</div>
+				</div>					
 			}
 		</div>
 
-		<Pagination Page=Page PageSize=PageSize IsSliding=true TotalPages=_pokemonPageResult.TotalPages HrefFactory=HrefFactory />
+		@* Added hard cap to total pages to exclude any special entries *@
+		<Pagination Page=Page PageSize=PageSize IsSliding=true TotalPages=@(Math.Min(_pokemonPageResult.TotalPages, _maxTotalPages)) HrefFactory=HrefFactory />
 	</article>
 }
 
 
 @code {
+	private const int _maxAllowedIndex = 1025;
+
 	[Parameter]
 	public int PageSize { get; set; } = 10;
 
@@ -35,9 +43,11 @@ else
 	public Func<int, string>? HrefFactory { get; set; }
 
 	private PageResult<Pokemon>? _pokemonPageResult;
+	private int _maxTotalPages;
 
 	protected override async Task OnParametersSetAsync()
 	{
+		_maxTotalPages = (int)Math.Ceiling((double)_maxAllowedIndex / PageSize);
 		await RequestPokemonPage();
 	}
 
