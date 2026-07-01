@@ -21,18 +21,25 @@ public class PokemonService : IPokemonService
 
     public async Task<Results<Ok<Pokemon>, NotFound>> GetPokemonAsync(string name)
     {
-        if (_pokemonCache.TryGetValue(name, out Pokemon? cachedPokemon))
+        string sanitisedName = name
+            .Trim()
+            .ToLowerInvariant()
+            .Replace(" ", "-")
+            .Replace(".", "")
+            .Replace("'", "");
+
+        if (_pokemonCache.TryGetValue(sanitisedName, out Pokemon? cachedPokemon))
         {
             return TypedResults.Ok(cachedPokemon);
         }   
 
-        var pokemon = await _httpClient.GetFromJsonAsync<Pokemon>($"pokemon/{name.ToLower()}");
+        var pokemon = await _httpClient.GetFromJsonAsync<Pokemon>($"pokemon/{sanitisedName}");
         if (pokemon is null)
         {
             return TypedResults.NotFound();
         }
 
-        _pokemonCache.Set(name, pokemon);
+        _pokemonCache.Set(sanitisedName, pokemon);
         return TypedResults.Ok(pokemon);
     }
 
