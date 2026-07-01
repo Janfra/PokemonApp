@@ -8,7 +8,7 @@ public static class PokemonConfiguration
 
     public static void AddPokemonConfiguration(this IServiceCollection services, IConfiguration configuration)
     {
-        Uri APIClient = new Uri(uriString: configuration[ConfigurationAPIKey] ?? throw new InvalidOperationException("PokeApi:BaseURL is missing from configuration"));
+        Uri APIClient = new Uri(uriString: configuration[ConfigurationAPIKey] ?? throw new InvalidOperationException($"{ConfigurationAPIKey} is missing from configuration"));
         services.AddScoped<IPokemonService, PokemonService>();
         services.AddHttpClient<IPokemonService, PokemonService>(client =>
         {
